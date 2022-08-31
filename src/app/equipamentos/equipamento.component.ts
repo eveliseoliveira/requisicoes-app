@@ -71,7 +71,7 @@ export class EquipamentoComponent implements OnInit {
 
     } catch (error) {
       if(error != "fechar" && error != "0" && error != "1")
-        this.toastrService.success(`Houve um erro ao salvar o equipamento. Tente novamente.`, "Cadastro de Equipamentos");
+        this.toastrService.error(`Houve um erro ao salvar o equipamento. Tente novamente.`, "Cadastro de Equipamentos");
     }
 
   }
@@ -81,7 +81,7 @@ export class EquipamentoComponent implements OnInit {
       this.equipamentoService.excluir(equipamento);
       this.toastrService.success(`O equipamento foi excluido com sucesso`, "Cadastro de Equipamentos");
     } catch (error) {
-      this.toastrService.success(`Houve um erro ao salvar o equipamento. Tente novamente.`, "Cadastro de Equipamentos");
+      this.toastrService.error(`Houve um erro ao salvar o equipamento. Tente novamente.`, "Cadastro de Equipamentos");
     }
   }
 

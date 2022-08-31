@@ -1,6 +1,7 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, NgModel } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 import { Departamento } from './models/departamento.model';
 import { DepartamentoService } from './services/departamento.service';
@@ -13,7 +14,7 @@ export class DepartamentoComponent implements OnInit {
   public departamentos$: Observable<Departamento[]>;
   public form: FormGroup;
 
-  constructor(private departamentoService: DepartamentoService, private modalService: NgbModal, private fb: FormBuilder) { }
+  constructor(private departamentoService: DepartamentoService, private modalService: NgbModal, private fb: FormBuilder, private toastrService: ToastrService ) { }
 
   ngOnInit(): void {
     this.departamentos$ = this.departamentoService.selecionarTodos();
@@ -57,16 +58,22 @@ export class DepartamentoComponent implements OnInit {
         await this.departamentoService.editar(this.form.value);
 
 
-    console.log(`O departamento foi salvo com sucesso`);
+        this.toastrService.success(`O departamento foi salvo com sucesso`, "Cadastro de Departamento");
 
-    } catch (_error) {
-
+    } catch (error) {
+      if(error != "fechar" && error != "0" && error != "1")
+        this.toastrService.error(`Houve um erro ao salvar o departamento. Tente novamente.`, "Cadastro de Departamento");
     }
 
   }
 
   public excluir(departamento: Departamento){
-    this.departamentoService.excluir(departamento);
+    try {
+      this.departamentoService.excluir(departamento);
+      this.toastrService.success(`O departamento foi excluido com sucesso`, "Cadastro de Departamento");
+    } catch (error) {
+      this.toastrService.error(`Houve um erro ao salvar o departamento. Tente novamente.`, "Cadastro de Equipamentos");
+    }
   }
 
 }
