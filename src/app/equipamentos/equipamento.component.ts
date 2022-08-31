@@ -14,7 +14,7 @@ export class EquipamentoComponent implements OnInit {
   public equipamentos$: Observable<Equipamento[]>;
   public form: FormGroup;
 
-  constructor(private equipamentoService: EquipamentoService, private modalService: NgbModal, private fb: FormBuilder, private toastr: ToastrService) {}
+  constructor(private equipamentoService: EquipamentoService, private modalService: NgbModal, private fb: FormBuilder, private toastrService: ToastrService) {}
 
   ngOnInit(): void {
     this.equipamentos$ = this.equipamentoService.selecionarTodos();
@@ -26,10 +26,6 @@ export class EquipamentoComponent implements OnInit {
       preco: new FormControl(""),
       fabricacao: new FormControl
     })
-  }
-
-  showSuccess() {
-    this.toastr.success('Hello world!', 'Toastr fun!');
   }
 
   get tituloModal(): string {
@@ -71,16 +67,22 @@ export class EquipamentoComponent implements OnInit {
         await this.equipamentoService.editar(this.form.value);
 
 
-    console.log(`O equipamento foi salvo com sucesso`);
+    this.toastrService.success(`O equipamento foi salvo com sucesso`, "Cadastro de Equipamentos");
 
-    } catch (_error) {
-
+    } catch (error) {
+      if(error != "fechar" && error != "0" && error != "1")
+        this.toastrService.success(`Houve um erro ao salvar o equipamento. Tente novamente.`, "Cadastro de Equipamentos");
     }
 
   }
 
   public excluir(equipamento: Equipamento){
-    this.equipamentoService.excluir(equipamento);
+    try {
+      this.equipamentoService.excluir(equipamento);
+      this.toastrService.success(`O equipamento foi excluido com sucesso`, "Cadastro de Equipamentos");
+    } catch (error) {
+      this.toastrService.success(`Houve um erro ao salvar o equipamento. Tente novamente.`, "Cadastro de Equipamentos");
+    }
   }
 
 }

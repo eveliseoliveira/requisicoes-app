@@ -4,6 +4,6 @@ export class Equipamento{
   id: string;
   numeroSerie: string;
   nome: string;
-  preco: string;
-  fabricacao: Date;
+  preco: number;
+  fabricacao: any;
 }

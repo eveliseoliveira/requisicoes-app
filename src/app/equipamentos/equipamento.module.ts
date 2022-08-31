@@ -5,7 +5,8 @@ import { EquipamentoRoutingModule } from './equipamento-routing.module';
 import { EquipamentoComponent } from './equipamento.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
-
+import { EquipamentoService } from './services/equipamento.service';
+import { CurrencyMaskModule } from 'ng2-currency-mask';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,9 @@ import { ReactiveFormsModule } from '@angular/forms';
     CommonModule,
     NgbModule,
     ReactiveFormsModule,
-    EquipamentoRoutingModule
-  ]
+    EquipamentoRoutingModule,
+    CurrencyMaskModule
+  ],
+  providers: [EquipamentoService]
 })
 export class EquipamentoModule { }
