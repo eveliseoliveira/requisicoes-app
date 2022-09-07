@@ -52,24 +52,34 @@
 
   <form [formGroup]="form" (ngSubmit)="modal.close('gravar')">
    <div class="modal-body">
-      <div class="form-group mb-3">
+      <div class="form-group mb-3 position-relative">
         <label for="nome" class="form-label">Nome do Departamento</label>
         <input formControlName="nome"
+        [ngClass]="(nome?.touched && nome?.invalid) ? 'is-invalid' : ''"
         class="form-control"
         type="text"
         placeholder="Digite o nome do seu departamento">
+        <div class="invalid-tooltip" *ngIf="nome?.touched && nome?.invalid">
+          <span *ngIf="nome?.errors?.['required']">O nome precisa ser prenchido.</span>
+          <span *ngIf="nome?.errors?.['minlength']">O nome precisa ter no minímo 3 letras.</span>
+        </div>
       </div>
-      <div class="form-group mb-3">
+      <div class="form-group mb-3 position-relative">
         <label for="telefone" class="form-label">Telefone</label>
         <input formControlName="telefone"
+        [ngClass]="(telefone?.touched && telefone?.invalid) ? 'is-invalid' : ''"
         class="form-control"
         type="text"
         placeholder="Digite o número do telefone do departamento">
+        <div class="invalid-tooltip" *ngIf="telefone?.touched && telefone?.invalid">
+          <span *ngIf="telefone?.errors?.['required']">O telefone precisa ser prenchido.</span>
+          <span *ngIf="telefone?.errors?.['minlength']">O telefone precisa ter no minímo 8 dígitos.</span>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
      <button type="button" class="btn btn-outline-primary col-md-3" (click)="modal.close('fechar')">Calecelar</button>
-     <button type="submit" class="btn btn-primary col-md-3">Gravar</button>
+     <button type="submit" class="btn btn-primary col-md-3" [disabled]="this.form.invalid">Gravar</button>
     </div>
   </form>
 </ng-template>

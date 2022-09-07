@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, NgModel } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, NgModel, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
@@ -21,9 +21,8 @@ export class DepartamentoComponent implements OnInit {
 
     this.form = this.fb.group({
       id: new FormControl(""),
-      numeroSerie: new FormControl(""),
-      nome: new FormControl(""),
-      telefone: new FormControl("")
+      nome: new FormControl("", [Validators.required, Validators.minLength(3)]),
+      telefone: new FormControl("", [Validators.required, Validators.minLength(8)])
     })
   }
 
@@ -52,13 +51,16 @@ export class DepartamentoComponent implements OnInit {
     try {
       await this.modalService.open(modal).result;
 
-      if(!departamento)
-        await this.departamentoService.inserir(this.form.value);
-      else
-        await this.departamentoService.editar(this.form.value);
-
+      if(this.form.dirty && this.form.valid){
+        if(!departamento)
+          await this.departamentoService.inserir(this.form.value);
+        else
+          await this.departamentoService.editar(this.form.value);
 
         this.toastrService.success(`O departamento foi salvo com sucesso`, "Cadastro de Departamento");
+      }
+      else
+      this.toastrService.info(`O formulário precisa ser preenchido!`, "Cadastro de Departamento");
 
     } catch (error) {
       if(error != "fechar" && error != "0" && error != "1")

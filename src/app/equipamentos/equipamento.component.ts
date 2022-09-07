@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 import { Equipamento } from './models/equipamento.model';
@@ -14,17 +14,21 @@ export class EquipamentoComponent implements OnInit {
   public equipamentos$: Observable<Equipamento[]>;
   public form: FormGroup;
 
-  constructor(private equipamentoService: EquipamentoService, private modalService: NgbModal, private fb: FormBuilder, private toastrService: ToastrService) {}
+  constructor(
+    private equipamentoService: EquipamentoService,
+    private modalService: NgbModal,
+    private fb: FormBuilder,
+    private toastrService: ToastrService) {}
 
   ngOnInit(): void {
     this.equipamentos$ = this.equipamentoService.selecionarTodos();
 
     this.form = this.fb.group({
       id: new FormControl(""),
-      numeroSerie: new FormControl(""),
-      nome: new FormControl(""),
-      preco: new FormControl(""),
-      fabricacao: new FormControl
+      numeroSerie: new FormControl("", [Validators.required, Validators.minLength(3)]),
+      nome: new FormControl("", [Validators.required, Validators.minLength(3)]),
+      preco: new FormControl("", [Validators.required]),
+      fabricacao: new FormControl("", [Validators.required])
     })
   }
 
@@ -61,13 +65,16 @@ export class EquipamentoComponent implements OnInit {
     try {
       await this.modalService.open(modal).result;
 
-      if(!equipamento)
-        await this.equipamentoService.inserir(this.form.value);
+      if(this.form.dirty && this.form.valid){
+        if(!equipamento)
+          await this.equipamentoService.inserir(this.form.value);
+        else
+          await this.equipamentoService.editar(this.form.value);
+
+        this.toastrService.success(`O equipamento foi salvo com sucesso`, "Cadastro de Equipamentos");
+      }
       else
-        await this.equipamentoService.editar(this.form.value);
-
-
-    this.toastrService.success(`O equipamento foi salvo com sucesso`, "Cadastro de Equipamentos");
+        this.toastrService.info(`O formulário precisa ser preenchido!`, "Cadastro de Equipamentos");
 
     } catch (error) {
       if(error != "fechar" && error != "0" && error != "1")
