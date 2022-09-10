@@ -7,6 +7,8 @@ export class Requisicao{
   abertura: Date | any;
   descricao: string;
 
+  atualizacao: Date | any;
+
   departamentoId: string;
   departamento?: Departamento;
 
