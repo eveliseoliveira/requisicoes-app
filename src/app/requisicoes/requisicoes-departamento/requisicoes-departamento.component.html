@@ -2,13 +2,16 @@
   <div class="row">
     <div class="col-12 col-md-10 col-lg-9 mx-auto">
       <div class="text-center text-md-start">
-        <h1 class="fw-bold text-primary">Requisicões para meu departamento</h1>
+        <h1 class="fw-bold text-primary">Requisições para meu Departamento</h1>
       </div>
 
-      <div class="d-grid d-md-block gap-2 mt-4">
-        <a role="button" class="btn btn-outline-primary col-md-2" routerLink="/painel">
+      <div class="d-grid gap-2 d-md-block mt-4">
+        <button
+          role="button"
+          class="btn btn-outline-primary col-md-2"
+          routerLink="/painel">
           <i class="pi pi-sign-out me-2"></i>Voltar
-        </a>
+        </button>
       </div>
 
       <div class="mt-4">
@@ -19,83 +22,97 @@
               <th>Departamento</th>
               <th>Descrição</th>
               <th>Equipamento</th>
+              <th>Status</th>
+              <th>Última Atualização</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody class="text-center">
             <tr *ngFor="let requisicao of (requisicoes$ | async)">
-              <td class="text-center">{{ requisicao.abertura.toDate() | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td class="text-center">{{ requisicao.atualizacao.toDate() | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td class="text-center">{{ requisicao.departamento?.nome }}</td>
-              <td class="text-center">{{ requisicao.descricao }}</td>
-              <td class="text-center">{{ requisicao.equipamento ? requisicao.equipamento.nome : "Não Selecionado" }}</td>
-
-              <td class="d-grid d-md-block">
-                <button type="button" class="btn btn-primary me-0 me-md-1 mb-1 mb-md-auto">
-                  <i class="pi pi-info-circle"></i>
+              <td class="text-center">{{requisicao.abertura.toDate() | date: 'dd/MM/yyyy HH:mm'}}</td>
+              <td class="text-center">{{requisicao.departamento?.nome}}</td>
+              <td class="text-center">{{requisicao.descricao}}</td>
+              <td class="text-center">{{requisicao.equipamento ? requisicao.equipamento.nome : "Não Selecionado"}}</td>
+              <td class="text-center">{{requisicao.status}}</td>
+              <td class="text-center">{{requisicao.ultimaAtualizacao.toDate() | date: 'dd/MM/yyyy HH:mm'}}</td>
+              <td class="text-center d-grid d-md-block">
+                <button
+                  (click)="gravar(modal, requisicao)"
+                  type="button"
+                  class="btn btn-primary me-0 me-md-1 mb-1 mb-md-auto">
+                  <i class="pi pi-check-square"></i>
+                </button>
+                <button
+                  [routerLink]="['/requisicoes', requisicao.id]"
+                  type="button"
+                  class="btn btn-outline-primary">
+                  <i class="pi pi-tags"></i>
                 </button>
               </td>
-
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+
   </div>
 </div>
 
-
 <ng-template #modal let-modal>
   <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">{{ tituloModal }} de Requisição</h4>
+    <h3 class="modal-title fw-bolder">Movimentação de Requisição</h3>
     <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('fechar')"></button>
   </div>
-
-  <form [formGroup]="form" (ngSubmit)="modal.close('gravar')">
-   <div class="modal-body">
-
-    <div class="form-group mb-3 position-relative">
-      <label for="departamentoId" class="form-label">Departamento Destino</label>
-      <ng-select
-      placeholder="Selecione um departamento"
-      [clearable]="false"
-      [searchable]="false"
-      class="w-75"
-      formControlName="departamentoId">
-      <ng-option
-        *ngFor="let departamento of (departamentos$ | async)"
-        [value]="departamento.id">{{ departamento?.nome }}</ng-option>
-      </ng-select>
-    </div>
-
-    <div class="form-group mb-3 position-relative">
-      <label for="departamentoId" class="form-label">Equipamento (opcional)</label>
-      <ng-select
-      placeholder="Selecione um equipamento"
-      [searchable]="false"
-      class="w-75"
-      formControlName="equipamentoId">
-      <ng-option
-        *ngFor="let equipamento of (equipamentos$ | async)"
-        [value]="equipamento.id">{{ equipamento?.nome }}</ng-option>
-      </ng-select>
-    </div>
-
+  <form [formGroup]="form" (ngSubmit)="modal.close('enviar')">
+    <div class="modal-body">
+      <div class="form-group mb-3 position-relative">
+        <label for="funcionario" class="form-label">Funcionário Solicitante</label>
+        <p class="text-primary fw-semibold">{{funcionarioLogado.nome}}</p>
+      </div>
 
       <div class="form-group mb-3 position-relative">
-        <label for="descricao" class="form-label">Descrição</label>
+        <label for="equipamentoId" class="form-label">Equipamento</label>
+        <p class="fw-semibold">{{requisicaoSelecionada.equipamento ? requisicaoSelecionada.equipamento?.nome : "Não informado"}}</p>
+      </div>
+
+      <div class="form-group mb-3 position-relative">
+        <label for="nome" class="form-label">Descrição da Solicitação</label>
+        <p class="fw-semibold">{{requisicaoSelecionada.descricao}}</p>
+      </div>
+
+      <hr>
+      <div class="form-group mb-3 position-relative">
+        <label for="status" class="form-label">Status</label>
+        <ng-select
+          placeholder="Status da requisição"
+          [searchable]="false"
+          [clearable]="false"
+          class="w-50"
+          formControlName="status"
+          [items]="listaStatus">
+        </ng-select>
+      </div>
+
+      <div class="form-group mb-3 position-relative">
+        <label for="nome" class="form-label">Descrição da Movimentação</label>
         <textarea formControlName="descricao"
-        class="form-control"
-        type="text"
-        placeholder="Digite a descrição"></textarea>
+          class="form-control"
+          type="text"
+          placeholder="Digite a descrição da atualização"></textarea>
       </div>
 
     </div>
     <div class="modal-footer">
-     <button type="button" class="btn btn-outline-primary col-md-3" (click)="modal.close('fechar')">Calecelar</button>
-     <button type="submit" class="btn btn-primary col-md-3" [disabled]="this.form.invalid">Gravar</button>
+      <button
+        type="button"
+        class="btn btn-outline-primary col-md-3"
+        (click)="modal.dismiss('fechar')">
+        Cancelar</button>
+      <button type="submit" class="btn btn-primary col-md-3" [disabled]="this.form.invalid">Salvar</button>
     </div>
   </form>
 </ng-template>
+
 
 

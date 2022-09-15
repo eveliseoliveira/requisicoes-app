@@ -51,7 +51,11 @@ export class RequisicoesFuncionarioComponent implements OnInit, OnDestroy {
       departamento: new FormControl(""),
 
       equipamentoId: new FormControl(""),
-      equipamento: new FormControl("")
+      equipamento: new FormControl(""),
+
+      status: new FormControl(""),
+      ultimaAtualizacao: new FormControl(""),
+      movimentacoes: new FormControl("")
     });
 
     this.departamentos$ = this.departamentoService.selecionarTodos();
@@ -155,7 +159,9 @@ export class RequisicoesFuncionarioComponent implements OnInit, OnDestroy {
   }
 
   private ConfigurarValoresPadrao(): void{
+    this.form.get("status")?.setValue("Aberta");
     this.form.get("abertura")?.setValue(new Date());
+    this.form.get("ultimaAtualizacao")?.setValue(new Date());
     this.form.get("equipamentoId")?.setValue(null);
     this.form.get("funcionarioId")?.setValue(this.funcionarioLogadoId);
   }

@@ -32,7 +32,13 @@
               <td class="text-center">{{ requisicao.descricao }}</td>
               <td class="text-center">{{ requisicao.equipamento ? requisicao.equipamento.nome : "Não Selecionado" }}</td>
               <td class="d-grid d-md-block">
-                <button (click)="gravar(modal, requisicao)" type="button" class="btn btn-primary me-0 me-md-1 mb-1 mb-md-auto">
+                <button
+                  [routerLink]="['/requisicoes', requisicao.id]"
+                  type="button"
+                  class="btn btn-outline-primary me-0 me-md-1 mb-md-auto">
+                <i class="pi pi-tags"></i>
+                </button>
+                <button (click)="gravar(modal, requisicao)" type="button" class="btn btn-outline-primary me-0 me-md-1 mb-1 mb-md-auto">
                   <i class="pi pi-user-edit"></i>
                 </button>
                 <button (click)="excluir(requisicao)" type="button" class="btn btn-outline-danger">
@@ -60,11 +66,11 @@
     <div class="form-group mb-3 position-relative">
       <label for="departamentoId" class="form-label">Departamento Destino</label>
       <ng-select
-      placeholder="Selecione um departamento"
-      [clearable]="false"
-      [searchable]="false"
-      class="w-75"
-      formControlName="departamentoId">
+        placeholder="Selecione um departamento"
+        [clearable]="false"
+        [searchable]="false"
+        class="w-75"
+        formControlName="departamentoId">
       <ng-option
         *ngFor="let departamento of (departamentos$ | async)"
         [value]="departamento.id">{{ departamento?.nome }}</ng-option>
@@ -74,10 +80,10 @@
     <div class="form-group mb-3 position-relative">
       <label for="departamentoId" class="form-label">Equipamento (opcional)</label>
       <ng-select
-      placeholder="Selecione um equipamento"
-      [searchable]="false"
-      class="w-75"
-      formControlName="equipamentoId">
+        placeholder="Selecione um equipamento"
+        [searchable]="false"
+        class="w-75"
+        formControlName="equipamentoId">
       <ng-option
         *ngFor="let equipamento of (equipamentos$ | async)"
         [value]="equipamento.id">{{ equipamento?.nome }}</ng-option>

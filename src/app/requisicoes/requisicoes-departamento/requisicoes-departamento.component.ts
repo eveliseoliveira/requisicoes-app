@@ -1,5 +1,5 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { Component, OnDestroy, OnInit, TemplateRef } from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subscription } from 'rxjs';
@@ -10,6 +10,7 @@ import { Equipamento } from 'src/app/equipamentos/models/equipamento.model';
 import { EquipamentoService } from 'src/app/equipamentos/services/equipamento.service';
 import { Funcionario } from 'src/app/funcionarios/models/funcionario.model';
 import { FuncionarioService } from 'src/app/funcionarios/services/funcionario.service';
+import { Movimentacao } from '../models/movimentacao.model';
 import { Requisicao } from '../models/requisicao.model';
 import { RequisicaoService } from '../services/requisicao.service';
 
@@ -17,13 +18,15 @@ import { RequisicaoService } from '../services/requisicao.service';
   selector: 'app-requisicoes-departamento',
   templateUrl: './requisicoes-departamento.component.html'
 })
-export class RequisicoesDepartamentoComponent implements OnInit {
+export class RequisicaoDepartamentoComponent implements OnInit, OnDestroy {
 
   public requisicoes$: Observable<Requisicao[]>;
   public departamentos$: Observable<Departamento[]>;
   public equipamentos$: Observable<Equipamento[]>;
   public funcionarios$: Observable<Funcionario[]>;
-  public funcionarioLogadoId: string;
+  public funcionarioLogado: Funcionario;
+  public requisicaoSelecionada: Requisicao;
+  public listaStatus: string[] = ["Aberta", "Processando", "Não Autorizada", "Fechada"];
   private processoAutenticado$: Subscription;
 
   public form: FormGroup;
@@ -40,19 +43,10 @@ export class RequisicoesDepartamentoComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      id: new FormControl(""),
-      abertura: new FormControl(""),
-      atualizacao: new FormControl(""),
-      descricao: new FormControl(""),
-
-      funcionarioId: new FormControl(""),
+      status: new FormControl("", [Validators.required]),
+      descricao: new FormControl("", [Validators.required, Validators.minLength(6)]),
       funcionario: new FormControl(""),
-
-      departamentoId: new FormControl(""),
-      departamento: new FormControl(""),
-
-      equipamentoId: new FormControl(""),
-      equipamento: new FormControl("")
+      data: new FormControl(""),
     });
 
     this.departamentos$ = this.departamentoService.selecionarTodos();
@@ -63,80 +57,66 @@ export class RequisicoesDepartamentoComponent implements OnInit {
 
       this.funcionarioService.selecionarFuncionarioLogado(email)
         .subscribe(funcionario => {
-          console.log(funcionario);
-          this.funcionarioLogadoId =  funcionario.id;
+          this.funcionarioLogado =  funcionario;
           this.requisicoes$ = this.requisicaoService
-            .selecionarRequisicoesfuncionarioAtual(this.funcionarioLogadoId);
+            .selecionarRequisicoesPorDepartamentoId(funcionario.departamentoId)
         });
     });
+
   }
 
-  get tituloModal(): string {
-    return this.id?.value ? "Atualização" : "Cadastro";
+  ngOnDestroy(): void {
+    this.processoAutenticado$.unsubscribe();
   }
 
   get id(): AbstractControl | null{
     return this.form.get("id");
   }
 
-  get funcionarioId(){
-    return this.form.get("funcionarioId");
+  get status(): AbstractControl | null{
+    return this.form.get("status");
   }
 
-  get abertura(){
-    return this.form.get("abertura");
-  }
+  public async gravar(modal: TemplateRef<any>, requisicao: Requisicao){
+    this.requisicaoSelecionada = requisicao;
+    this.requisicaoSelecionada.movimentacoes = requisicao?.movimentacoes ? requisicao.movimentacoes : [];
 
-  get atualizacao(){
-    return this.form.get("atualizacao");
-  }
-
-  get departamentoId(){
-    return this.form.get("departamentoId");
-  }
-
-  get descricao(){
-    return this.form.get("descricao");
-  }
-
-  get equipamentoId() {
-    return this.form.get("equipamentoId");
-  }
-
-  public async gravar(modal: TemplateRef<any>, requisicao?: Requisicao){
     this.form.reset();
+    this.ConfigurarValoresPadrao();
 
-    if(requisicao){
-      const departamento = requisicao.departamento ? requisicao.departamento : null;
-      const funcionario = requisicao.funcionario ? requisicao.funcionario : null;
-      const equipamento = requisicao.equipamento ? requisicao.equipamento : null;
-
-      const requisicaoCompleta = {
-        ...requisicao,
-        departamento,
-        funcionario,
-        equipamento
-
-      }
-      this.form.setValue(requisicaoCompleta);
-    }
 
     try {
       await this.modalService.open(modal).result;
 
       if(this.form.dirty && this.form.valid){
-        if(requisicao){
-          await this.requisicaoService.editar(this.form.value);
-        }
+        this.atualizarRequisicao(this.form.value);
 
-        this.toastrService.success(`Status Alterado`, "Requisições Meu Departamento");
+        await this.requisicaoService.editar(this.requisicaoSelecionada);
+
+        this.toastrService.success(`A requisição foi salva com sucesso`, "Cadastro de Requisições");
       }
+      else
+        this.toastrService.info(`O formulário precisa ser preenchido!`, "Cadastro de Requisições");
 
     } catch (error) {
       if(error != "fechar" && error != "0" && error != "1")
-        this.toastrService.error(`Houve um erro ao salvar a requisção. Tente novamente.`, "Requisições Meu Departamento");
+        this.toastrService.error(`Houve um erro ao salvar a requisção. Tente novamente.`, "Cadastro de Requisições");
     }
 
+  }
+
+  private atualizarRequisicao(movimentacao: Movimentacao){
+    this.requisicaoSelecionada.movimentacoes.push(movimentacao);
+    this.requisicaoSelecionada.status = this.status?.value;
+    this.requisicaoSelecionada.ultimaAtualizacao = new Date();
+  }
+
+  private ConfigurarValoresPadrao(): void{
+    this.form.patchValue({
+      funcionario: this.funcionarioLogado,
+      status: this.requisicaoSelecionada?.status,
+      data: new Date()
+    });
   }
 
 }
