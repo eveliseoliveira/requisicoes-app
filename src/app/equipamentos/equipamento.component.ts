@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { Equipamento } from './models/equipamento.model';
 import { EquipamentoService } from './services/equipamento.service';
 import { ToastrService } from 'ngx-toastr';
+import { dataFuturaValidator } from '../shared/validators/data-futura.validator';
 
 @Component({
   selector: 'app-equipamento',
@@ -25,10 +26,10 @@ export class EquipamentoComponent implements OnInit {
 
     this.form = this.fb.group({
       id: new FormControl(""),
-      numeroSerie: new FormControl("", [Validators.required, Validators.minLength(3)]),
+      numeroSerie: new FormControl("", [Validators.required]),
       nome: new FormControl("", [Validators.required, Validators.minLength(3)]),
-      preco: new FormControl("", [Validators.required]),
-      fabricacao: new FormControl("", [Validators.required])
+      preco: new FormControl("", [Validators.required, Validators.minLength(0)]),
+      fabricacao: new FormControl("", [Validators.required, dataFuturaValidator()])
     })
   }
 

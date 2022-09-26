@@ -23,7 +23,8 @@ export class RequisicoesFuncionarioComponent implements OnInit, OnDestroy {
   public departamentos$: Observable<Departamento[]>;
   public equipamentos$: Observable<Equipamento[]>;
   public funcionarios$: Observable<Funcionario[]>;
-  public funcionarioLogadoId: string;
+
+  public funcionarioLogado: Funcionario;
   private processoAutenticado$: Subscription;
 
   public form: FormGroup;
@@ -60,19 +61,14 @@ export class RequisicoesFuncionarioComponent implements OnInit, OnDestroy {
 
     this.departamentos$ = this.departamentoService.selecionarTodos();
     this.equipamentos$ = this.equipamentoService.selecionarTodos();
+    this.requisicoes$ = this.requisicaoService.selecionarTodos();
 
     this.processoAutenticado$ = this.authService.usuarioLogado.subscribe(usuario => {
       const email: string = usuario?.email!;
 
       this.funcionarioService.selecionarFuncionarioLogado(email)
-        .subscribe(funcionario => {
-          console.log(funcionario);
-          this.funcionarioLogadoId =  funcionario.id;
-          this.requisicoes$ = this.requisicaoService
-            .selecionarRequisicoesfuncionarioAtual(this.funcionarioLogadoId);
-        });
+        .subscribe(funcionario => this.funcionarioLogado =  funcionario);
     });
-
   }
 
   ngOnDestroy(): void {
@@ -163,7 +159,7 @@ export class RequisicoesFuncionarioComponent implements OnInit, OnDestroy {
     this.form.get("abertura")?.setValue(new Date());
     this.form.get("ultimaAtualizacao")?.setValue(new Date());
     this.form.get("equipamentoId")?.setValue(null);
-    this.form.get("funcionarioId")?.setValue(this.funcionarioLogadoId);
+    this.form.get("funcionarioId")?.setValue(this.funcionarioLogado.id);
   }
 
 }

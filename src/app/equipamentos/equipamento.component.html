@@ -99,7 +99,8 @@
         class="form-control"
         type="date">
         <div class="invalid-tooltip" *ngIf="fabricacao?.touched && fabricacao?.invalid">
-          <span *ngIf="fabricacao?.errors?.['required']">O fabricação precisa ser prenchido.</span>
+          <span *ngIf="fabricacao?.errors?.['required']">A data de fabricação precisa ser prenchida.</span>
+          <span *ngIf="fabricacao?.errors?.['datafutura']">A data de fabricação não pode exceder hoje.</span>
         </div>
       </div>
 
